@@ -54,13 +54,34 @@ def CC_analysis(data):
     Using correlation coefficient to analyze data
     '''
     CC_mat = data.loc[:, data.columns != 'Class'].corrwith(data['Class'])
+    CC_mat = CC_mat.apply(lambda x: round(x, 3))
     return CC_mat
+
+def feature_selection_using_CC(CC_mat, data):
+    '''
+    using CC to select two features that has the greatest abs and has opposite sign
+    using LDA to test Accuracy
+    '''
+    print(CC_mat)
+    # assign the feature by abs sort and choose the greates
+    feature1 = CC_mat.abs().sort_values(ascending=False).index[0]
+    if CC_mat[feature1] < 0: feature2 = CC_mat.sort_values(ascending=False).index[0]
+    else: feature2 = CC_mat.sort_values(ascending=True).index[0]
+    print(feature1 + feature2)
+    plot(data, feature1, feature2)
+    
+    # LDA classify the trainning data
+    clf = LinearDiscriminantAnalysis(solver = 'eigen', n_components = 1)
+    clf.fit(data.loc[: ,[feature1, feature2]], data['Class'])
+    curr_score = clf.score(data.loc[: ,[feature1, feature2]], data['Class'])
+    print(round(curr_score, 3))
 
 def BFS_analysis(data):
     '''
     Using Brute Force Search to analyze data
     '''
     score = 0
+    score_second = 0
     for feature1 in data.columns:
         for feature2 in data.columns:
             if feature1 != feature2 and feature1 != 'Class' and feature2 != 'Class':
@@ -68,15 +89,23 @@ def BFS_analysis(data):
                 clf.fit(data.loc[: ,[feature1, feature2]], data['Class'])
                 curr_score = clf.score(data.loc[: ,[feature1, feature2]], data['Class'])
                 if( curr_score > score):
+                    score_second = score
                     score = curr_score
                     features = [feature1 , feature2]
                     best_clf = clf
-    return features, score, best_clf
+    return features, score, best_clf, score_second
 
 def PCA_analysis(data):
     '''
     Using PCA to analyze data
     '''
+    # print Covariance Matrix
+    X_std = feature_generation(data.loc[:, data.columns != 'Class'])
+    mean_vec = np.mean(X_std, axis=0)
+    cov_mat = (X_std - mean_vec).T.dot((X_std - mean_vec)) / (X_std.shape[0]-1)
+    print('Covariance matrix \n%s' %cov_mat)
+
+
     pca = PCA(n_components = 2)
     pca.fit(data.loc[:, data.columns != 'Class'])
     print(pca.components_)
@@ -122,20 +151,28 @@ def main():
     # read csv file
     abominable_data = pd.read_csv('Abominable_Data_HW19_v420.csv')
     test_data = pd.read_csv('Abominable_UNCLASSIFIED_Data_HW19_v420.csv')
-
+    print(test_data)
     data = feature_generation(balancing_data(abominable_data))
     # print("After processing, data.head:\n"+ str(data.head()))
-
-    print(CC_analysis(data))
+    
+    # print(CC_analysis(data))
+    # feature selection
+    feature_selection_using_CC(CC_analysis(data), data)
     # cross correlation analysis part
-    features, score, best_clf = BFS_analysis(data)
+    features, score, best_clf, score_second = BFS_analysis(data)
+    # [issue]tempary print out the score as the accuracy
+    print(str(features) + ' ' + str(round(score, 3)) + ' ' + str(round(score_second, 3)))
     plot(data, features[0], features[1])
-    test_result= best_clf.predict(feature_generation(balancing_data(test_data[features])))
+    
+    # test the classifier on unclassified test data
+    # test_result= best_clf.predict(feature_generation(balancing_data(test_data[features])))
+    test_result= best_clf.predict(feature_generation(test_data)[features])
+    
     # brute force search part
 
-    #new_data = PCA_analysis(balancing_data(abominable_data))
+    new_data = PCA_analysis(balancing_data(abominable_data))
 
-    #plot(new_data, 'PCA_1', 'PCA_2')
+    plot(new_data, 'PCA_1', 'PCA_2')
   
     # doing some preprocessing on the dataset
     #data = feature_generation(balancing_data(abominable_data))
