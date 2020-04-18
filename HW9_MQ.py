@@ -4,6 +4,8 @@ import matplotlib.pyplot as plt
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.decomposition import PCA
 import random
+import math
+from HW_08_Martin_Qian import Gradient_Descent__Fit_Through_a_Line_v100
 
 def balancing_data(data):
     '''
@@ -143,6 +145,8 @@ def plot(data, feature1, feature2):
     # This part is for plotting decision boundry
     CA = np.mean(data.loc[data['Class'] == 1,[feature1, feature2]])
     CB = np.mean(data.loc[data['Class'] == -1,[feature1, feature2]])
+    print(CA)
+    print(CB)
     plt.plot([CA[0],CB[0]],[CA[1],CB[1]],\
         'm-' , label = 'projection vector')
     x = range(2 , 8)
@@ -178,10 +182,35 @@ def main():
     new_data = PCA_analysis(data)
     plot(new_data, 'PCA_feature1', 'PCA_feature2')
     
-    # test the classifier on unclassified test data
+    #test the classifier on unclassified test data
     test_result= best_clf.predict(feature_generation(test_data)[features])
     pd.DataFrame(test_result).to_csv('HW_09_Classiﬁed_Results.csv')
     print('test result generated')
+
+    print('\n4. Gradient Descent part:')
+
+    # gradient decent
+    # initial theta is 62.7 degrees, rho 6.10
+    theta, rho =  Gradient_Descent__Fit_Through_a_Line_v100(\
+        [data[features[0]],data[features[1]],data['Class']] , 62.7, 11.2 ,4.5)
+
+    A       =  math.cos(math.radians(( theta ) ))
+    B       =  math.sin(math.radians(( theta ) ))
+    C       =  -rho 
+
+    print('result of gradient descent:\n %s*x + %s*y + %s = 0' %(str(A),str(B),str(C)))
+    plt.scatter(
+        data[features[0]],
+        data[features[1]],
+        c=data['Class'],
+        cmap='rainbow',
+        alpha=0.7,
+        edgecolors='b'
+    )
+    x = [0.,10.]
+    plt.plot(x, [(-C-A*x[0])/B, (-C-A*x[1])/B], 'k-' )
+    plt.show()
+
 
 if __name__ == "__main__":
     main()
