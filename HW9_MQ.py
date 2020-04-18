@@ -111,8 +111,8 @@ def PCA_analysis(data):
     '''
     pca = PCA(n_components = 3)
     pca.fit(data.loc[:, data.columns != 'Class'])
-    print("eigen vectors of PCA\n"+str(pca.components_))
-    print("singular values of PCA\n"+str(pca.singular_values_))
+    print("eigen vectors of PCA\n"+str(pca.components_.round(3)))
+    print("singular values of PCA\n"+str(pca.singular_values_.round(3)))
     print('We will use the first 2 eigen vectors')
 
     # doing projection
