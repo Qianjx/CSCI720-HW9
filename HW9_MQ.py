@@ -111,7 +111,7 @@ def PCA_analysis(data):
     cov_mat = (X_std - mean_vec).T.dot((X_std - mean_vec)) / (X_std.shape[0]-1)
     print('Covariance matrix \n%s' %cov_mat)
     '''
-    pca = PCA(n_components = 3)
+    pca = PCA(n_components = 7)
     pca.fit(data.loc[:, data.columns != 'Class'])
     print("eigen vectors of PCA\n"+str(pca.components_.round(3)))
     print("singular values of PCA\n"+str(pca.singular_values_.round(3)))
@@ -190,7 +190,7 @@ def main():
     print('\n4. Gradient Descent part:')
 
     # gradient decent
-    # initial theta is 62.7 degrees, rho 6.10
+    # initial theta is 62.7 degrees, rho 11.2
     theta, rho =  Gradient_Descent__Fit_Through_a_Line_v100(\
         [data[features[0]],data[features[1]],data['Class']] , 62.7, 11.2 ,4.5)
 
